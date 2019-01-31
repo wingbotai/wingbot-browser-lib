@@ -1,4 +1,4 @@
-'use strict';
+#!/usr/bin/env node
 
 const jsdoc2md = require('jsdoc-to-markdown');
 const fs = require('fs');

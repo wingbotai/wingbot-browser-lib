@@ -21,7 +21,7 @@ app.use(webpackDev(compiler, {
     stats: 'minimal'
 }));
 
-app.use(express.static(path.resolve(__dirname, '..', 'examples')));
+app.use(express.static(path.resolve(__dirname, '..', 'docs')));
 
 app.listen(3000, (err) => {
     if (err) {

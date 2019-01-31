@@ -68,14 +68,14 @@ const compiler = webpack(webpackConfig);
 
 // setup templating
 
-const distPath = path.join(__dirname, '..', 'dist');
+const distPath = path.join(__dirname, '..', 'docs');
 
 console.log('Cleaning up dist dir');
 
 const files = fs.readdirSync(distPath);
 
 for (const file of files) {
-    if (file.match(/\.(js|html)(\.gz)?$/)) {
+    if (file.match(/\.(js)(\.gz)?$/)) {
         fs.unlinkSync(path.join(distPath, file));
     }
 }
