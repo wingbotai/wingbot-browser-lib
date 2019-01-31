@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "es2017",
+        "lib": [
+            "es2016",
+            "dom"
+        ],
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true,
+        "checkJs": true
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
