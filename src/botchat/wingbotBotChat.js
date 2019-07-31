@@ -33,6 +33,7 @@ function createDlAndRenderComponent (
     conversationId = null
 ) {
     let init = false;
+    let started = false;
     let uid = userId;
     let cid = conversationId;
 
@@ -51,28 +52,48 @@ function createDlAndRenderComponent (
 
     // @ts-ignore
     const dl = new window.BotChat.DirectLine(directLineConfig);
+    const postbackQueue = [];
 
-    dl.postBack = function (a, d) {
-        return this.postActivity({
+    dl.postBack = function (action, data = {}, callback = null) {
+        const activity = {
             type: 'event',
             name: 'postBack',
             from: { id: uid },
-            value: { action: a, data: d || {} }
-        });
+            value: { action, data }
+        };
+        if (started) {
+            this.postActivity(activity).subscribe(callback || ((x) => {
+                console.log('sent', x); // eslint-disable-line no-console
+            }));
+        } else {
+            postbackQueue.push({ activity, callback });
+        }
     };
+
+    function processQueue () {
+        if (started) {
+            return;
+        }
+        started = true;
+        postbackQueue.forEach(({ activity, callback }) => {
+            dl.postActivity(activity).subscribe(callback || ((x) => {
+                console.log('sent', x); // eslint-disable-line no-console
+            }));
+        });
+    }
 
     if (cfg.initAction && !init) {
         dl.connectionStatus$.subscribe((cs) => {
             if (cs === 4) {
                 // it failed, we'll re-start the component
                 createDlAndRenderComponent(cfg, componentCfg, targetEl, onAttach, uid);
-            } else if (!init && cs === 2) {
-                init = true;
-                onAttach(dl);
-                dl.postBack(cfg.initAction, cfg.initData)
-                    .subscribe(cfg.onInit || ((x) => {
-                        console.log('initialized', x); // eslint-disable-line no-console
-                    }));
+            } else if (cs === 2) {
+                processQueue();
+                if (!init) {
+                    init = true;
+                    onAttach(dl);
+                    dl.postBack(cfg.initAction, cfg.initData, cfg.onInit);
+                }
             }
         });
     } else if (targetEl) {
@@ -81,6 +102,7 @@ function createDlAndRenderComponent (
                 // it failed, we'll re-start the component
                 createDlAndRenderComponent(cfg, componentCfg, targetEl, onAttach, uid);
             } else if (cs === 2) {
+                processQueue();
                 onAttach(dl);
             }
         });
@@ -134,7 +156,7 @@ function createDlAndRenderComponent (
  * @param {Function} onAttach - called when component attached
  * @returns {Object} - DirectLine object with new postBack(action[,data={}]) method
  */
-export default function (cfg, componentCfg, targetEl, onAttach = () => {}) {
+export default function wingbotBotChat (cfg, componentCfg, targetEl, onAttach = () => {}) {
     const uidMatch = (document.cookie || '').match(/wingbotUserId=([^&;\s]+)/i);
     const cidMatch = (document.cookie || '').match(/wingbotCid=([^&;\s]+)/i);
 
