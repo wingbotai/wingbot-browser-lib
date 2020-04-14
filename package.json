@@ -1,6 +1,6 @@
 {
   "name": "wingbot-browser-lib",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "Wingbot tools for the browser",
   "main": "src/main.js",
   "scripts": {
